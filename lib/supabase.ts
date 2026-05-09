@@ -28,3 +28,4 @@ export type Booking = {
   proof_url: string | null
   created_at: string
 }
+
