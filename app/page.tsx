@@ -44,10 +44,10 @@ export default async function HomePage() {
               Platform rental terpercaya untuk mahasiswa. Dari kamera, tenda camping, hingga drone - semua ada di sini.
             </p>
             <div className="flex flex-col sm:flex-row gap-4">
-              <Button size="lg" className="bg-accent hover:bg-accent-hover text-white font-semibold">
+              <Button size="lg" className="bg-accent hover:bg-accent-hover text-black font-semibold">
                 Mulai Sewa Sekarang
               </Button>
-              <Button size="lg" variant="outline" className="border-white text-white hover:bg-white hover:text-primary">
+              <Button size="lg" variant="outline" className="border-white text-black hover:bg-white hover:text-primary">
                 Pelajari Lebih Lanjut
               </Button>
             </div>
@@ -60,7 +60,7 @@ export default async function HomePage() {
         <div className="container mx-auto px-4">
           <div className="text-center mb-12">
             <h2 className="text-3xl md:text-4xl font-bold mb-4">
-              Barang <span className="text-accent">Tersedia</span>
+              Barang Tersedia
             </h2>
             <p className="text-gray-600 max-w-2xl mx-auto">
               Pilih dari berbagai kategori barang berkualitas yang siap disewa dengan harga terjangkau

@@ -21,7 +21,7 @@ export default function Navbar() {
           </Link>
         </div>
 
-        <Button className="bg-accent hover:bg-accent-hover">
+        <Button className="bg-cyan-800 hover:bg-accent-hover">
           List Your Item
         </Button>
       </div>

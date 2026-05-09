@@ -140,7 +140,7 @@ export default async function PropertyDetailPage({
 
               {/* CTA Button */}
               <Link href={`/checkout/${property.id}`} className="block">
-                <Button size="lg" className="w-full bg-accent hover:bg-accent-hover text-white text-lg font-semibold py-6 shadow-lg">
+                <Button size="lg" className="w-full bg-accent hover:bg-accent-hover text-black text-lg font-semibold py-6 shadow-lg">
                   Sewa Sekarang
                 </Button>
               </Link>

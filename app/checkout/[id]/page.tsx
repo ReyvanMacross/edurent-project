@@ -16,8 +16,14 @@ async function getProperty(id: string) {
   return data as Property
 }
 
-export default async function CheckoutPage({ params }: { params: { id: string } }) {
-  const property = await getProperty(params.id)
+export default async function CheckoutPage({
+  params,
+}: {
+  params: Promise<{ id: string }>
+}) {
+  const { id } = await params
+
+  const property = await getProperty(id)
 
   if (!property) {
     notFound()

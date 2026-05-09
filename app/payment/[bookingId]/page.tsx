@@ -19,8 +19,16 @@ async function getBookingDetails(bookingId: string) {
   return data
 }
 
-export default async function PaymentPage({ params }: { params: { bookingId: string } }) {
-  const booking = await getBookingDetails(params.bookingId)
+export default async function PaymentPage({ 
+  params 
+}: { 
+  params: Promise<{ bookingId: string }> // Tambahin Promise di sini
+}) {
+  // 2. UNWRAP params-nya dulu pake await (Ini kuncinya!)
+  const { bookingId } = await params 
+
+  // 3. Baru deh dipake buat narik data
+  const booking = await getBookingDetails(bookingId)
 
   if (!booking) {
     notFound()

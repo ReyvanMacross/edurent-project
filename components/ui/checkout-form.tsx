@@ -126,7 +126,7 @@ export default function CheckoutForm({ property }: CheckoutFormProps) {
             <Button
               type="submit"
               size="lg"
-              className="w-full bg-accent hover:bg-accent-hover text-white font-semibold h-12"
+              className="w-full bg-accent hover:bg-accent-hover text-black font-semibold h-12"
               disabled={loading}
             >
               {loading ? (

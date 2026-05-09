@@ -61,17 +61,17 @@ export default function PaymentForm({ booking }: PaymentFormProps) {
       // Upload ke Supabase Storage
       const fileExt = file.name.split('.').pop()
       const fileName = `${booking.id}-${Date.now()}.${fileExt}`
-      const filePath = `payment-proofs/${fileName}`
+      const filePath = `proofs/${fileName}`
 
       const { error: uploadError } = await supabase.storage
-        .from('edurent')
+        .from('proof-payments')
         .upload(filePath, file)
 
       if (uploadError) throw uploadError
 
       // Get public URL
       const { data: urlData } = supabase.storage
-        .from('edurent')
+        .from('proof-payments')
         .getPublicUrl(filePath)
 
       // Update booking dengan proof_url
@@ -139,7 +139,7 @@ export default function PaymentForm({ booking }: PaymentFormProps) {
             <div className="bg-white border-2 border-dashed border-gray-300 rounded-xl p-6 text-center">
               <div className="relative w-48 h-48 mx-auto bg-gray-100 rounded-lg mb-4">
                 <Image
-                  src="https://images.unsplash.com/photo-1614680376593-902f74cf0d41?w=400"
+                  src="https://rjwzrtuzgqxzdsenrtrr.supabase.co/storage/v1/object/public/proof-payments/qris%20payment/Screenshot%202026-05-09%20095627.png"
                   alt="QRIS Code"
                   fill
                   className="object-contain p-2"
