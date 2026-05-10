@@ -3,14 +3,9 @@ import { redirect } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 import AdminDashboard from '@/components/ui/admin-dashboard'
 
-const cookieStore = await cookies()
-const authCookie = cookieStore.get('admin-auth')
-
-if (!authCookie) {
-  redirect('/admin-login')
-}
-
-export const revalidate = 0
+// 1. WAJIB: Kasih tau Vercel jangan jadikan halaman ini statis saat build
+// Ini solusi buat error "cookies was called outside a request scope"
+export const dynamic = 'force-dynamic'
 
 async function getBookings() {
   const { data, error } = await supabase
@@ -35,19 +30,15 @@ async function getBookings() {
 }
 
 export default async function AdminPage() {
-  // ==============================================================
-  // 🔒 PROTEKSI SERVER-SIDE (ANTI-JEBOL)
-  // FIX: Tambahkan 'await' karena Next.js 15 mengharuskan cookies() async
-  // ==============================================================
+ 
   const cookieStore = await cookies()
   const authCookie = cookieStore.get('admin-auth')
 
-  // Kalau nggak ada cookie atau nilainya bukan 'authenticated', TENDANG!
   if (!authCookie || authCookie.value !== 'authenticated') {
     redirect('/admin-login')
   }
 
-  // Kalau aman lolos pengecekan di atas, baru kita fetch data bookings
+  // Jika lolos gembok di atas, baru ambil data
   const bookings = await getBookings()
 
   return (
@@ -72,7 +63,7 @@ export default async function AdminPage() {
             </div>
             
             <div className="flex items-center gap-3">
-               <div className="bg-blue-50 text-blue-700 px-4 py-2 rounded-full text-sm font-bold border border-blue-100 flex items-center gap-2">
+              <div className="bg-blue-50 text-blue-700 px-4 py-2 rounded-full text-sm font-bold border border-blue-100 flex items-center gap-2">
                 <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
                 Sistem Realtime Aktif
               </div>
@@ -83,6 +74,7 @@ export default async function AdminPage() {
 
       {/* Dashboard Content */}
       <main className="container mx-auto px-4 lg:px-8 py-8">
+        {/* Mengirim data bookings ke Client Component Dashboard */}
         <AdminDashboard initialBookings={bookings} />
       </main>
       
