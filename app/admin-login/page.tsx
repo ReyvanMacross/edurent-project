@@ -29,11 +29,7 @@ export default function AdminLoginPage() {
     await new Promise(resolve => setTimeout(resolve, 800))
 
     if (password === ADMIN_PASSWORD) {
-      // ============================================
-      // SESSION COOKIE (HANYA BERLAKU SELAMA BROWSER DIBUKA)
-      // Tidak pakai max-age, jadi kalau browser diclose, otomatis logout!
-      // Tambahan `secure` dan `samesite=strict` untuk keamanan ekstra.
-      // ============================================
+    
       document.cookie = 'admin-auth=authenticated; path=/; secure; samesite=strict'
       
       // Redirect ke dashboard

@@ -39,7 +39,7 @@ export default function PropertyCard({ property }: PropertyCardProps) {
 
         <CardContent className="p-4">
           {/* Title */}
-          <h3 className="font-semibold text-lg mb-2 line-clamp-1 group-hover:text-accent transition">
+          <h3 className="font-semibold text-lg mb-2 line-clamp-1 group-hover:text-black transition ">
             {property.title}
           </h3>
 

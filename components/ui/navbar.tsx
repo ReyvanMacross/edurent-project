@@ -15,7 +15,7 @@ export default function Navbar() {
 
         {/* LOGO */}
         <Link href="/" className="text-2xl font-bold tracking-tight text-primary">
-          Edu<span className="text-accent">Rent</span>
+          Edu<span className="text-shadow-black">Rent</span>
         </Link>
 
         {/* DESKTOP MENU */}
