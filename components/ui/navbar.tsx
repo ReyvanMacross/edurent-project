@@ -20,7 +20,7 @@ export default function Navbar() {
 
         {/* DESKTOP MENU */}
         <div className="hidden md:flex items-center gap-8">
-          <Link href="/" className="text-sm font-medium hover:text-accent transition-colors">
+          {/* <Link href="/" className="text-sm font-medium hover:text-accent transition-colors">
             Home
           </Link>
           <Link href="/properties" className="text-sm font-medium hover:text-accent transition-colors">
@@ -28,7 +28,7 @@ export default function Navbar() {
           </Link>
           <Link href="/contact" className="text-sm font-medium hover:text-accent transition-colors">
             Contact
-          </Link>
+          </Link> */}
         </div>
 
         {/* CTA BUTTON DESKTOP */}
@@ -52,14 +52,14 @@ export default function Navbar() {
       {/* MOBILE MENU DROPDOWN */}
       {isMobileMenuOpen && (
         <div className="md:hidden border-t bg-white px-4 py-4 space-y-4 shadow-lg absolute w-full">
-          <Link
+          {/* <Link
             href="/"
             className="block text-base font-medium text-gray-700"
             onClick={() => setIsMobileMenuOpen(false)}
           >
             Home
-          </Link>
-          <Link
+          </Link> */}
+          {/* <Link
             href="/properties"
             className="block text-base font-medium text-gray-700"
             onClick={() => setIsMobileMenuOpen(false)}
@@ -72,7 +72,7 @@ export default function Navbar() {
             onClick={() => setIsMobileMenuOpen(false)}
           >
             Contact
-          </Link>
+          </Link> */}
           <Link
             href="/track"
             className="block text-base font-bold text-primary"
