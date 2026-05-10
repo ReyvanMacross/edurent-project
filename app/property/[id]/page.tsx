@@ -135,7 +135,7 @@ export default async function PropertyDetailPage({
                 <Link href={`/checkout/${property.id}`} className="block">
                   <Button 
                     size="lg" 
-                    className="w-full bg-accent hover:bg-accent-hover text-primary rounded-2xl h-14 text-lg font-bold shadow-lg shadow-accent/20 transition-all hover:-translate-y-1"
+                    className="w-full bg-gray-900 hover:bg-black text-white rounded-2xl h-14 text-lg font-bold shadow-lg shadow-gray-900/20 transition-all hover:-translate-y-1"
                   >
                     Mulai Sewa Sekarang
                   </Button>

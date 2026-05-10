@@ -32,11 +32,15 @@ export default async function CheckoutPage({
   return (
     <>
       <Navbar />
-      <div className="min-h-screen bg-gray-50 py-8 md:py-12">
-        <div className="container mx-auto px-4 max-w-4xl">
-          <h1 className="text-3xl md:text-4xl font-bold text-center mb-8">
-            Checkout <span className="text-accent">Rental</span>
-          </h1>
+      {/* Background dibikin agak abu-abu halus biar Card-nya lebih pop-out */}
+      <div className="min-h-screen bg-[#F8FAFC] py-8 md:py-12">
+        <div className="container mx-auto px-4 max-w-5xl">
+          <div className="mb-10">
+            <h1 className="text-3xl md:text-4xl font-extrabold text-gray-900 tracking-tight">
+              Selesaikan <span className="text-primary">Pesanan Lo</span>
+            </h1>
+            <p className="text-gray-500 mt-2">Isi data diri di bawah ini buat lanjut ke proses pembayaran.</p>
+          </div>
 
           <CheckoutForm property={property} />
         </div>
