@@ -1,11 +1,11 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Card, CardContent, CardHeader, CardTitle, CardFooter } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Label } from '@/components/ui/label'
 import { supabase } from '@/lib/supabase'
-import { Loader2, Upload, CheckCircle, Clock, Image as ImageIcon } from 'lucide-react'
+import { Loader2, Upload, CheckCircle, Clock, XCircle, FileText, Receipt, ArrowRight } from 'lucide-react'
 import Image from 'next/image'
 
 interface PaymentFormProps {
@@ -74,15 +74,19 @@ export default function PaymentForm({ booking }: PaymentFormProps) {
         .from('proof-payments')
         .getPublicUrl(filePath)
 
-      // Update booking dengan proof_url
+      // Update booking dengan proof_url dan reset status ke pending (berguna kalau user re-upload setelah di-reject)
       const { error: updateError } = await supabase
         .from('bookings')
-        .update({ proof_url: urlData.publicUrl })
+        .update({ 
+          proof_url: urlData.publicUrl,
+          status: 'pending' // Reset status
+        })
         .eq('id', booking.id)
 
       if (updateError) throw updateError
 
       setProofUrl(urlData.publicUrl)
+      setStatus('pending') // Update state lokal
       alert('Bukti pembayaran berhasil diupload! Tunggu konfirmasi admin.')
     } catch (error) {
       console.error('Error uploading proof:', error)
@@ -92,84 +96,137 @@ export default function PaymentForm({ booking }: PaymentFormProps) {
     }
   }
 
+  // Menentukan UI berdasarkan status
+  const getStatusConfig = () => {
+    switch (status) {
+      case 'success':
+        return {
+          color: 'text-green-600',
+          bg: 'bg-green-50',
+          border: 'border-green-500',
+          icon: <CheckCircle className="w-12 h-12 text-green-600" />,
+          title: 'Pembayaran Dikonfirmasi!',
+          desc: 'Pesanan Anda telah disetujui. Kami akan segera memprosesnya.',
+        }
+      case 'rejected':
+        return {
+          color: 'text-red-600',
+          bg: 'bg-red-50',
+          border: 'border-red-500',
+          icon: <XCircle className="w-12 h-12 text-red-600" />,
+          title: 'Pembayaran Ditolak',
+          desc: 'Bukti pembayaran tidak valid atau kurang jelas. Silakan upload ulang bukti yang benar.',
+        }
+      default: // pending
+        return {
+          color: 'text-amber-600',
+          bg: 'bg-amber-50',
+          border: 'border-amber-500',
+          icon: <Clock className="w-12 h-12 text-amber-600 animate-pulse" />,
+          title: 'Menunggu Konfirmasi',
+          desc: 'Admin sedang memeriksa bukti pembayaran Anda (1-5 Menit).',
+        }
+    }
+  }
+
+  const currentStatus = getStatusConfig()
+
   return (
-    <div className="space-y-6">
-      {/* Status Card */}
-      <Card className={`border-2 ${
-        status === 'success' ? 'border-green-500 bg-green-50' :
-        status === 'pending' ? 'border-yellow-500 bg-yellow-50' :
-        'border-gray-300'
-      }`}>
-        <CardContent className="py-6">
-          <div className="flex items-center gap-4">
-            {status === 'success' ? (
-              <>
-                <CheckCircle className="w-12 h-12 text-green-600" />
-                <div>
-                  <h3 className="font-bold text-xl text-green-800">Pembayaran Dikonfirmasi! ✅</h3>
-                  <p className="text-green-700">Pesanan Anda telah disetujui. Kami akan menghubungi Anda via WhatsApp.</p>
-                </div>
-              </>
-            ) : (
-              <>
-                <Clock className="w-12 h-12 text-yellow-600 animate-pulse" />
-                <div>
-                  <h3 className="font-bold text-xl text-yellow-800">Menunggu Konfirmasi</h3>
-                  <p className="text-yellow-700">Admin sedang memeriksa bukti pembayaran Anda.</p>
-                </div>
-              </>
-            )}
+    <div className="space-y-6 max-w-5xl mx-auto">
+      {/* Banner Status Card */}
+      <Card className={`border-l-8 shadow-md transition-all duration-300 ${currentStatus.border} ${currentStatus.bg}`}>
+        <CardContent className="py-6 flex items-center gap-5">
+          <div className="shrink-0 bg-white p-3 rounded-full shadow-sm">
+            {currentStatus.icon}
+          </div>
+          <div>
+            <h3 className={`font-bold text-xl md:text-2xl mb-1 ${currentStatus.color}`}>
+              {currentStatus.title}
+            </h3>
+            <p className="text-gray-700 text-sm md:text-base font-medium">
+              {currentStatus.desc}
+            </p>
           </div>
         </CardContent>
       </Card>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        {/* QRIS Payment */}
-        <Card className="border-0 shadow-lg">
-          <CardHeader>
-            <CardTitle>Metode Pembayaran</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="bg-gradient-to-br from-primary to-primary-dark text-white p-4 rounded-xl">
-              <p className="text-sm opacity-90 mb-1">Total Pembayaran</p>
-              <p className="text-3xl font-bold">Rp {booking.total_price.toLocaleString('id-ID')}</p>
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        {/* Kolom Kiri: Instruksi & QRIS */}
+        <div className="space-y-6">
+          <Card className="border-0 shadow-lg overflow-hidden">
+            <div className="bg-gradient-to-r from-blue-600 to-indigo-700 p-6 text-white text-center">
+              <p className="text-blue-100 text-sm font-medium mb-1">Total yang harus dibayar</p>
+              <h2 className="text-4xl font-extrabold tracking-tight">
+                Rp {booking.total_price.toLocaleString('id-ID')}
+              </h2>
             </div>
-
-            {/* QRIS Code */}
-            <div className="bg-white border-2 border-dashed border-gray-300 rounded-xl p-6 text-center">
-              <div className="relative w-48 h-48 mx-auto bg-gray-100 rounded-lg mb-4">
-                <Image
-                  src="https://rjwzrtuzgqxzdsenrtrr.supabase.co/storage/v1/object/public/proof-payments/qris%20payment/Screenshot%202026-05-09%20095627.png"
-                  alt="QRIS Code"
-                  fill
-                  className="object-contain p-2"
-                  sizes="192px"
-                />
+            
+            <CardContent className="p-6 space-y-6">
+              {/* Instruksi */}
+              <div className="bg-blue-50/50 border border-blue-100 rounded-xl p-5">
+                <h4 className="flex items-center gap-2 text-sm font-bold text-blue-800 mb-3">
+                  <Receipt className="w-4 h-4" /> 
+                  Cara Pembayaran:
+                </h4>
+                <ul className="text-sm text-blue-700 space-y-2">
+                  <li className="flex items-start gap-2">
+                    <span className="bg-blue-200 text-blue-800 rounded-full w-5 h-5 flex items-center justify-center shrink-0 text-xs font-bold">1</span>
+                    Transfer sesuai nominal di atas.
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <span className="bg-blue-200 text-blue-800 rounded-full w-5 h-5 flex items-center justify-center shrink-0 text-xs font-bold">2</span>
+                    Simpan & screenshot bukti transfer.
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <span className="bg-blue-200 text-blue-800 rounded-full w-5 h-5 flex items-center justify-center shrink-0 text-xs font-bold">3</span>
+                    Upload bukti di kolom yang disediakan.
+                  </li>
+                </ul>
               </div>
-              <p className="font-semibold mb-1">Scan QRIS di atas</p>
-              <p className="text-sm text-gray-600">atau transfer ke rekening:</p>
-              <div className="mt-3 p-3 bg-gray-50 rounded-lg">
-                <p className="text-xs text-gray-500">BCA - 1234567890</p>
-                <p className="font-bold">a.n. EduRent Indonesia</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
 
-        {/* Upload Proof */}
-        <Card className="border-0 shadow-lg">
-          <CardHeader>
-            <CardTitle>Upload Bukti Pembayaran</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="proof" className="text-sm text-gray-600">
-                Screenshot/foto bukti transfer
-              </Label>
-              
-              {proofUrl ? (
-                <div className="space-y-3">
-                  <div className="relative w-full h-64 bg-gray-100 rounded-lg overflow-hidden">
+              {/* QRIS Code */}
+              <div className="border-2 border-dashed border-gray-200 rounded-xl p-6 text-center hover:border-blue-400 transition-colors">
+                <div className="relative w-48 h-48 mx-auto bg-white rounded-lg mb-4 shadow-sm border p-2">
+                  <Image
+                    src="https://rjwzrtuzgqxzdsenrtrr.supabase.co/storage/v1/object/public/proof-payments/qris%20payment/Screenshot%202026-05-09%20095627.png"
+                    alt="QRIS Code"
+                    fill
+                    className="object-contain"
+                    sizes="192px"
+                    unoptimized
+                  />
+                </div>
+                <p className="font-bold text-gray-800 mb-1">Scan QRIS di atas</p>
+                <div className="flex items-center justify-center gap-3 text-sm text-gray-500 my-3">
+                  <div className="h-px bg-gray-200 w-12"></div>
+                  <span>Atau Transfer Manual</span>
+                  <div className="h-px bg-gray-200 w-12"></div>
+                </div>
+                <div className="bg-gray-50 p-4 rounded-xl border border-gray-100">
+                  <p className="text-xs text-gray-500 uppercase tracking-wider font-semibold mb-1">Bank BCA</p>
+                  <p className="font-mono text-xl text-gray-800 font-bold tracking-widest mb-1">123 456 7890</p>
+                  <p className="text-sm font-medium text-gray-600">a.n. EduRent Indonesia</p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Kolom Kanan: Upload & Detail Pesanan */}
+        <div className="space-y-6">
+          {/* Upload Proof */}
+          <Card className="border-0 shadow-lg">
+            <CardHeader className="border-b bg-gray-50/50 pb-4">
+              <CardTitle className="text-lg flex items-center gap-2">
+                <Upload className="w-5 h-5 text-blue-600" />
+                Upload Bukti Transfer
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="p-6">
+              {/* Logika: Kalau sukses/pending dan sudah ada foto, tunjukin fotonya. Kalau di-reject, boleh upload lagi */}
+              {proofUrl && status !== 'rejected' ? (
+                <div className="space-y-4">
+                  <div className="relative w-full aspect-[4/3] bg-gray-100 rounded-xl overflow-hidden border">
                     <Image
                       src={proofUrl}
                       alt="Bukti Pembayaran"
@@ -178,26 +235,36 @@ export default function PaymentForm({ booking }: PaymentFormProps) {
                       sizes="(max-width: 768px) 100vw, 50vw"
                     />
                   </div>
-                  <p className="text-sm text-green-600 flex items-center gap-2">
-                    <CheckCircle className="w-4 h-4" />
-                    Bukti pembayaran telah diupload
-                  </p>
+                  <div className="flex items-center gap-2 text-sm text-green-700 bg-green-50 p-3 rounded-lg border border-green-100 font-medium">
+                    <CheckCircle className="w-5 h-5 shrink-0" />
+                    Bukti pembayaran berhasil terkirim.
+                  </div>
                 </div>
               ) : (
                 <label
                   htmlFor="proof"
-                  className="flex flex-col items-center justify-center w-full h-64 border-2 border-dashed border-gray-300 rounded-lg cursor-pointer hover:border-accent transition bg-gray-50 hover:bg-gray-100"
+                  className={`flex flex-col items-center justify-center w-full aspect-[4/3] border-2 border-dashed rounded-xl cursor-pointer transition-all duration-200 
+                    ${status === 'rejected' ? 'border-red-300 bg-red-50 hover:bg-red-100' : 'border-gray-300 bg-gray-50 hover:bg-blue-50 hover:border-blue-400'}`}
                 >
-                  <div className="flex flex-col items-center justify-center pt-5 pb-6">
+                  <div className="flex flex-col items-center justify-center p-6 text-center">
                     {uploading ? (
-                      <Loader2 className="w-12 h-12 text-accent animate-spin mb-3" />
+                      <>
+                        <Loader2 className="w-12 h-12 text-blue-600 animate-spin mb-4" />
+                        <p className="text-sm font-semibold text-blue-600">Mengunggah gambar...</p>
+                      </>
                     ) : (
-                      <Upload className="w-12 h-12 text-gray-400 mb-3" />
+                      <>
+                        <div className="w-16 h-16 bg-white rounded-full shadow-sm flex items-center justify-center mb-4">
+                          <Upload className="w-8 h-8 text-blue-500" />
+                        </div>
+                        <p className="mb-2 text-base font-bold text-gray-700">
+                          {status === 'rejected' ? 'Upload Ulang Bukti Transfer' : 'Klik untuk upload bukti'}
+                        </p>
+                        <p className="text-xs text-gray-500 max-w-[200px]">
+                          Format: JPG, PNG, atau WEBP. Maksimal 5MB.
+                        </p>
+                      </>
                     )}
-                    <p className="mb-2 text-sm text-gray-600 font-medium">
-                      {uploading ? 'Mengupload...' : 'Klik untuk upload'}
-                    </p>
-                    <p className="text-xs text-gray-500">PNG, JPG (Max. 5MB)</p>
                   </div>
                   <input
                     id="proof"
@@ -209,45 +276,43 @@ export default function PaymentForm({ booking }: PaymentFormProps) {
                   />
                 </label>
               )}
-            </div>
+            </CardContent>
+          </Card>
 
-            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-              <p className="text-sm text-blue-800 font-medium mb-2">📋 Instruksi:</p>
-              <ol className="text-xs text-blue-700 space-y-1 list-decimal list-inside">
-                <li>Transfer sesuai nominal yang tertera</li>
-                <li>Screenshot bukti transfer</li>
-                <li>Upload bukti di form ini</li>
-                <li>Tunggu konfirmasi dari admin (1-5 menit)</li>
-              </ol>
-            </div>
-          </CardContent>
-        </Card>
+          {/* Booking Details - Ala Struk */}
+          <Card className="border-0 shadow-lg relative overflow-hidden">
+            <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-blue-500 via-indigo-500 to-purple-500"></div>
+            <CardHeader className="pb-2">
+              <CardTitle className="text-lg flex items-center gap-2">
+                <FileText className="w-5 h-5 text-gray-500" />
+                Rincian Pesanan
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4 pt-2">
+              <div className="flex justify-between items-center pb-3 border-b border-dashed border-gray-200">
+                <span className="text-gray-500 text-sm">Nama Lengkap</span>
+                <span className="font-semibold text-gray-800">{booking.guest_name}</span>
+              </div>
+              <div className="flex justify-between items-center pb-3 border-b border-dashed border-gray-200">
+                <span className="text-gray-500 text-sm">WhatsApp</span>
+                <span className="font-semibold text-gray-800">{booking.guest_whatsapp}</span>
+              </div>
+              <div className="flex justify-between items-center pb-3 border-b border-dashed border-gray-200">
+                <span className="text-gray-500 text-sm">Durasi Sewa</span>
+                <span className="font-semibold text-gray-800 bg-gray-100 px-2 py-1 rounded-md">
+                  {booking.duration_days} Hari
+                </span>
+              </div>
+              <div className="pt-2">
+                <span className="text-gray-500 text-sm block mb-1">Item yang disewa</span>
+                <span className="font-bold text-blue-700 block line-clamp-2">
+                  {booking.properties.title}
+                </span>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
       </div>
-
-      {/* Booking Details */}
-      <Card className="border-0 shadow-lg">
-        <CardHeader>
-          <CardTitle>Detail Pesanan</CardTitle>
-        </CardHeader>
-        <CardContent className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          <div>
-            <p className="text-xs text-gray-500 mb-1">Nama</p>
-            <p className="font-semibold">{booking.guest_name}</p>
-          </div>
-          <div>
-            <p className="text-xs text-gray-500 mb-1">WhatsApp</p>
-            <p className="font-semibold">{booking.guest_whatsapp}</p>
-          </div>
-          <div>
-            <p className="text-xs text-gray-500 mb-1">Durasi</p>
-            <p className="font-semibold">{booking.duration_days} hari</p>
-          </div>
-          <div>
-            <p className="text-xs text-gray-500 mb-1">Barang</p>
-            <p className="font-semibold truncate">{booking.properties.title}</p>
-          </div>
-        </CardContent>
-      </Card>
     </div>
   )
 }

@@ -68,7 +68,7 @@ export default function CheckoutForm({ property }: CheckoutFormProps) {
             {/* Nama */}
             <div className="space-y-2">
               <Label htmlFor="name" className="flex items-center gap-2">
-                <User className="w-4 h-4 text-accent" />
+                <User className="w-4 h-4 text-black" />
                 Nama Lengkap
               </Label>
               <Input
@@ -85,7 +85,7 @@ export default function CheckoutForm({ property }: CheckoutFormProps) {
             {/* WhatsApp */}
             <div className="space-y-2">
               <Label htmlFor="whatsapp" className="flex items-center gap-2">
-                <Phone className="w-4 h-4 text-accent" />
+                <Phone className="w-4 h-4 text-black" />
                 Nomor WhatsApp
               </Label>
               <Input
@@ -103,7 +103,7 @@ export default function CheckoutForm({ property }: CheckoutFormProps) {
             {/* Duration */}
             <div className="space-y-2">
               <Label htmlFor="duration" className="flex items-center gap-2">
-                <Calendar className="w-4 h-4 text-accent" />
+                <Calendar className="w-4 h-4 text-black" />
                 Durasi Sewa
               </Label>
               <Select
@@ -186,7 +186,7 @@ export default function CheckoutForm({ property }: CheckoutFormProps) {
             <div className="border-t pt-4">
               <div className="flex justify-between items-center">
                 <span className="font-semibold text-lg">Total</span>
-                <span className="font-bold text-2xl text-accent">
+                <span className="font-bold text-2xl text-black">
                   Rp {(parseInt(formData.duration_days) >= 7 ? totalPrice * 0.9 : totalPrice).toLocaleString('id-ID')}
                 </span>
               </div>

@@ -1,6 +1,14 @@
+import { cookies } from 'next/headers'
+import { redirect } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 import AdminDashboard from '@/components/ui/admin-dashboard'
-import { redirect } from 'next/navigation'
+
+const cookieStore = await cookies()
+const authCookie = cookieStore.get('admin-auth')
+
+if (!authCookie) {
+  redirect('/admin-login')
+}
 
 export const revalidate = 0
 
@@ -27,26 +35,57 @@ async function getBookings() {
 }
 
 export default async function AdminPage() {
+  // ==============================================================
+  // 🔒 PROTEKSI SERVER-SIDE (ANTI-JEBOL)
+  // FIX: Tambahkan 'await' karena Next.js 15 mengharuskan cookies() async
+  // ==============================================================
+  const cookieStore = await cookies()
+  const authCookie = cookieStore.get('admin-auth')
+
+  // Kalau nggak ada cookie atau nilainya bukan 'authenticated', TENDANG!
+  if (!authCookie || authCookie.value !== 'authenticated') {
+    redirect('/admin-login')
+  }
+
+  // Kalau aman lolos pengecekan di atas, baru kita fetch data bookings
   const bookings = await getBookings()
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Header */}
-      <div className="bg-gradient-to-r from-primary to-primary-dark text-white">
-        <div className="container mx-auto px-4 py-8">
-          <h1 className="text-3xl md:text-4xl font-bold mb-2">
-            Admin Dashboard 🔐
-          </h1>
-          <p className="text-gray-200">
-            Kelola semua booking dan konfirmasi pembayaran secara realtime
-          </p>
+    <div className="min-h-screen bg-gray-50/50">
+      
+      {/* Header Premium Area */}
+      <div className="bg-white border-b border-gray-200 sticky top-0 z-40">
+        <div className="container mx-auto px-4 lg:px-8 py-5">
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <div>
+              <h1 className="text-2xl md:text-3xl font-extrabold text-gray-900 flex items-center gap-3">
+                <span className="bg-primary text-white p-2 rounded-xl">
+                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                  </svg>
+                </span>
+                Control Panel
+              </h1>
+              <p className="text-gray-500 mt-1 font-medium ml-11">
+                Kelola pesanan dan konfirmasi pembayaran EduRent.
+              </p>
+            </div>
+            
+            <div className="flex items-center gap-3">
+               <div className="bg-blue-50 text-blue-700 px-4 py-2 rounded-full text-sm font-bold border border-blue-100 flex items-center gap-2">
+                <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
+                Sistem Realtime Aktif
+              </div>
+            </div>
+          </div>
         </div>
       </div>
 
       {/* Dashboard Content */}
-      <div className="container mx-auto px-4 py-8">
+      <main className="container mx-auto px-4 lg:px-8 py-8">
         <AdminDashboard initialBookings={bookings} />
-      </div>
+      </main>
+      
     </div>
   )
 }
